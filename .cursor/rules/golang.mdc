@@ -1,0 +1,125 @@
+**Project: Cursor**
+
+> このファイルは Cursor で表示されるプロジェクトルールです。  
+> すべての Go コードは以下のガイドラインに従ってください。
+
+---
+
+## 1. 基本方針
+| 目的 | 指針 |
+| --- | --- |
+| 一貫性 | `gofmt`, `goimports`, `gofumpt` を必須とし、PR でフォーマット差分をゼロにする。 |
+| 可読性 | 意図が 3 秒以内に理解できるコード。賢さより明快さを優先。 |
+| テスト容易性 | パッケージ境界をインターフェースで切り、DI（依存注入）でテストを簡潔に。 |
+
+---
+
+## 2. 依存ツール
+* **Formatter**: `gofumpt` → `goimports`  
+* **Linter**: `golangci-lint@v1.59` (設定は `.golangci.yml`)  
+  * 有効ルール: `staticcheck`, `gocognit`, `gosec`, `errcheck`, `revive`  
+* **Test**: `go test -v -race ./...` を CI 必須  
+* **Coverage**: 80 %以上でないとマージ不可（`go test -coverprofile`）
+
+---
+
+## 3. パッケージ構成
+/cmd エントリポイント（main のみ）
+/internal ビジネスロジック（他から import 不可）
+/pkg 再利用可能ライブラリ
+/api OpenAPI / protobuf 生成コード
+/testdata テスト用静的ファイル
+
+markdown
+コピーする
+編集する
+* 循環 import を禁止（`go vet` が検出）。  
+* 1 パッケージ＝1 責務。巨大化したら `/foo` と `/foo/internal` に分割。
+
+---
+
+## 4. 命名規約
+| 対象 | 規約 | 例 |
+| --- | --- | --- |
+| パッケージ | 小文字・単数系 | `cache`, `crawler` |
+| Export 変数/関数 | PascalCase | `Start`, `NewClient` |
+| 非公開 | camelCase | `retryCount` |
+| インターフェース | 名詞+er / able | `Fetcher`, `Closable` |
+| エラ型 | `Err` プレフィックス | `ErrTimeout` |
+
+---
+
+## 5. コーディングスタイル
+### 5.1 フォーマット
+* **行長 120 桁**まで。  
+* 複数戻り値は **名前付き** にせず、変数へ即代入。  
+* 変数束縛は**最小スコープ**で `:=` を使う。
+
+### 5.2 エラー処理
+```go
+if err != nil {
+    return fmt.Errorf("crawler: fetch %s: %w", url, err)
+}
+```
+ラップは %w。
+
+制御フローにエラー値を使わない。
+
+panic は不変条件の違反時のみ。
+
+### 5.3 コンテキスト
+外部 I/O を伴う関数は ctx context.Context を第1引数に。
+
+time.AfterFunc や go func には ctx を必ず渡す。
+
+### 5.4 ロギング
+
+標準パッケージのlog/slogを使用する。
+
+## 6. Concurrency
+ゴルーチン生成箇所は コメントで責務を説明。
+
+チャネルバッファは容量理由をコメント。
+
+共有状態には sync.Mutex／sync/atomic。RWMutex はパフォーマンス計測後のみ使用。
+
+## 7. テスト
+型	規約
+単体テスト	ブラックボックステストを優先。外部依存はインターフェースでモック化。
+テーブルテスト	入出力を slice で列挙し、サブテスト t.Run() 利用。
+Golden テスト	結果のスナップショットは /testdata/*.golden に保存。
+
+## 8. 依存管理
+go 1.22 を最低バージョン。
+
+go mod tidy で未使用依存を削除。
+
+外部ライブラリのラッパーを /internal/infra に隔離し、直 import を禁止。
+
+## 9. CI/CD チェックリスト
+gofumpt -l . に差分ゼロ
+
+golangci-lint run 通過
+
+go test -race ./... 成功
+
+カバレッジ 80 %以上
+
+Docker イメージ内で ./cmd/crawler が起動可能
+
+## 10. セキュリティ & パフォーマンス
+パスワードや API Key は 環境変数か AWS Secrets Manager。
+
+gosec で脆弱性検出。
+
+軽量構造体・スライスのコピーを減らし、sync.Pool はベンチ後のみ採用。
+
+## 11. ドキュメント
+ファイル先頭に Package comment（1 行説明 + 空行 + 具体例）。
+
+公開関数は必ず godoc 形式のコメント。
+
+ADR（Architectural Decision Record）は /docs/adr/ に Markdown で管理。
+
+
+
