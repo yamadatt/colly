@@ -1,0 +1,89 @@
+# Application Configuration
+app:
+  name: "collycrawler"
+  version: "1.0.0"
+  log_level: "info"
+
+# Target Site Configuration
+target:
+  base_url: "https://yamada-tech-memo.netlify.app"
+  start_urls:
+    - "https://yamada-tech-memo.netlify.app/"
+    - "https://yamada-tech-memo.netlify.app/posts/"
+    # 発見された記事URLを直接追加（第1ページから）
+    - "https://yamada-tech-memo.netlify.app/posts/git-clean-untracked-files/"
+    - "https://yamada-tech-memo.netlify.app/posts/github-actions-slack/"
+    - "https://yamada-tech-memo.netlify.app/posts/github-actions-oidc-aws-ecs/"
+    - "https://yamada-tech-memo.netlify.app/posts/vite-manifest-not-found/"
+    - "https://yamada-tech-memo.netlify.app/posts/lambda_switchbot_new_relic/"
+    - "https://yamada-tech-memo.netlify.app/posts/20250702_new_relic/"
+    - "https://yamada-tech-memo.netlify.app/posts/yt-dlp-download-dj-mix/"
+    - "https://yamada-tech-memo.netlify.app/posts/markdown-to-pdf/"
+    - "https://yamada-tech-memo.netlify.app/posts/open-ai-codex-vibe-coding/"
+    - "https://yamada-tech-memo.netlify.app/posts/lambda-kick0spotify-recently-play-music/"
+    # ページネーションページも追加（さらなる記事発見のため）
+    - "https://yamada-tech-memo.netlify.app/posts/page/2/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/3/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/4/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/5/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/6/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/7/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/8/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/9/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/10/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/11/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/12/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/13/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/14/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/15/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/16/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/17/"
+    - "https://yamada-tech-memo.netlify.app/posts/page/18/"
+  allowed_domains:
+    - "yamada-tech-memo.netlify.app"
+  exclude_patterns:
+    - "*.jpg"
+    - "*.jpeg"
+    - "*.png"
+    - "*.gif"
+    - "*.pdf"
+    - "*.css"
+    - "*.js"
+    - "/assets/*"
+    - "/images/*"
+    - "/posts/$"
+    - "/posts/index.xml"
+    - "/tags/*"
+    - "/categories/*"
+
+# Crawler Configuration
+crawler:
+  parallel_jobs: 3
+  request_delay: "2s"
+  timeout: "45s"
+  max_depth: 100
+  user_agent: "CollyCrawler/1.0 (+https://github.com/yourname/collycrawler)"
+  respect_robots_txt: true
+
+# HTML Selectors for Content Extraction
+selectors:
+  # Article content selectors (実際のページ構造に最適化)
+  article:
+    title: "h1, .post-title, .entry-title, .post-header h1, article h1, main h1, title"
+    content: "main, article, .post-content, .entry-content, .content, .post-body, .markdown, body"
+    published_date: "time[datetime], .post-date, .published, .date, .post-meta time, .meta time"
+    author: ".author, .post-author, .by-author, .post-meta .author, .meta .author"
+  
+  # Link extraction selectors (すべてのリンクを対象に最適化)
+  links:
+    internal_links: "a[href*='/posts/'][href$='/'], a[href*='/posts/'][href*='-']"
+    pagination: ".pagination a, .next-page, .prev-page, a[href*='/page/']"
+    all_links: "a[href]"
+
+# Storage Configuration
+storage:
+  output_format: "jsonl"
+  output_file: "data/articles.jsonl"
+  backup_enabled: true
+  backup_directory: "data/backups"
+  max_backup_files: 10
