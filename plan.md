@@ -5,7 +5,6 @@
 ## 1. 環境準備
 1. Go 1.XX をインストール（最新安定版を想定）
 2. `colly` をはじめ必要なパッケージを `go mod` で管理できるよう初期化する
-3. `zap` などログ用ライブラリも同時に導入
 
 ## 2. プロジェクト構成作成
 1. 以下のディレクトリを作成
@@ -28,7 +27,7 @@
    - HTML セレクター（記事抽出、リンク抽出）
    - 保存設定（出力ファイルパス、バックアップ設定）
 2. Go の構造体にマッピングできるよう `internal/models/config.go` を実装
-3. `viper` などのライブラリで YAML を読み込む処理を `pkg/config` に実装
+3. `go.yaml.in/yaml` などのライブラリで YAML を読み込む処理を `pkg/config` に実装
 
 ## 4. Collector 実装
 1. `internal/collector/collector.go` を作成
@@ -53,7 +52,7 @@
 ## 7. CLI エントリポイント
 1. `cmd/crawler/main.go` を用意
 2. 起動時に YAML 設定を読み込み、Collector と Scraper を初期化して実行
-3. 実行結果やエラーをログに出力（zap を利用）
+
 
 ## 8. テスト
 1. `testdata/` などに HTML スナップショットを用意
